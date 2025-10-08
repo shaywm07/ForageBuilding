@@ -1,6 +1,6 @@
 'use client'
 import { navbarData } from '@/lib/data'
-import { Minus, MoreVertical, Plus, ShoppingCart, X } from 'lucide-react'
+import { Minus, MoreVertical, Plus, PlusIcon, ShoppingCart, X } from 'lucide-react'
 import Link from 'next/link'
 import React, { useState } from 'react'
 import {
@@ -20,6 +20,7 @@ type Props = {
 
 const ProductGrid = ({ products }: Props) => {
   const [toggle, setToggle] = useState(false)
+  const [gridIndex, setGridIndex] = useState(0) // Index for cycling through grid sizes
 
   const {
     isOpen,
@@ -30,28 +31,59 @@ const ProductGrid = ({ products }: Props) => {
     cartTotal,
   } = useCart()
 
+  // Grid sizes in the desired cycling pattern: 5 → 4 → 3 → 4 → 5 → 4 → 3 → 4 → 5...
+  const gridSizes = [5, 4, 3, 4, 5, 4, 3, 4]
+  const currentGridSize = gridSizes[gridIndex]
+
+  // Cycle through grid sizes: 5 → 4 → 3 → 4 → 5 → 4 → 3 → 4 → 5...
+  const cycleGridSize = () => {
+    setGridIndex(prev => (prev + 1) % gridSizes.length)
+  }
+
+  // Get grid classes based on current size
+  const getGridClasses = () => {
+    const baseClasses = "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-40 transition-all duration-500 ease-in-out"
+    
+    switch (currentGridSize) {
+      case 3: return `${baseClasses} lg:grid-cols-3`
+      case 4: return `${baseClasses} lg:grid-cols-4`
+      case 5: return `${baseClasses} lg:grid-cols-5`
+      default: return `${baseClasses} lg:grid-cols-5`
+    }
+  }
+
   return (
     <div className="min-h-screen bg-white">
       <header className="sticky top-0 z-10 bg-white ">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <button
-            className="p-2"
-            onClick={() => setToggle(!toggle)}
-          >
-            {toggle ? (
-              <X className="h-6 w-6 font-bold" />
-            ) : (
-              <MoreVertical className="h-6 w-6" />
-            )}
-            <span className="sr-only">Menu</span>
-          </button>
+          <div className='flex gap-4 items-center'>
+            <button
+              onClick={cycleGridSize}
+              title={`Toggle grid size (Current: ${currentGridSize} columns)`}
+            >
+              <PlusIcon className="h-5 w-5 text-black hover:text-gray-600 transition-colors" />
+              <span className="sr-only">Toggle grid size</span>
+            </button>
+            <button
+              className="p-2"
+              onClick={() => setToggle(!toggle)}
+            >
+              {toggle ? (
+                <X className="h-6 w-6 font-bold " />
+              ) : (
+                <MoreVertical className="h-6 w-6 hover:text-gray-600 transition-colors" />
+              )}
+              <span className="sr-only">Menu</span>
+            </button>
+          </div>
+          
           {toggle && (
-            <div className="w-full flex gap-x-10 items-center justify-center">
+            <div className="flex gap-x-10 items-center">
               {navbarData.map((item) => (
                 <Link
                   href={item.link}
                   key={item.idx}
-                  className="text-lg font-medium text-primary"
+                  className="text-lg font-medium text-primary hover:text-gray-600 transition-colors"
                 >
                   {item.title}
                 </Link>
@@ -65,7 +97,10 @@ const ProductGrid = ({ products }: Props) => {
           >
             <SheetTrigger asChild>
               <button className="text-lg font-medium flex items-center gap-2">
-                <span>Cart</span>
+                <div className='flex gap-2 items-center justify-between'>
+                  <span>Cart</span>
+                  <video src="/bag.mp4" muted autoPlay loop className='h-6'></video>
+                </div>
                 {cartItems.length > 0 && (
                   <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-medium bg-black text-white rounded-full">
                     {cartItems.reduce(
@@ -78,12 +113,12 @@ const ProductGrid = ({ products }: Props) => {
             </SheetTrigger>
             <SheetContent className="w-full sm:max-w-md">
               <SheetHeader>
-                <SheetTitle>Your Cart</SheetTitle>
+                <SheetTitle>CART</SheetTitle>
               </SheetHeader>
               {cartItems.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-[50vh]">
-                  <ShoppingCart className="h-12 w-12 text-gray-300 mb-4" />
-                  <p className="text-gray-500">Your cart is empty</p>
+                <div className="flex flex-col items-center justify-center h-[50vh] mt-6">
+                  <video src="/cart.mp4" muted autoPlay loop className='h-20 mb-4'></video>
+                  <p className="text-gray-800">Your cart is empty..</p>
                 </div>
               ) : (
                 <div className="flex flex-col h-full">
@@ -157,7 +192,7 @@ const ProductGrid = ({ products }: Props) => {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-40">
+        <div className={getGridClasses()}>
           {products.map((product, index) => (
             <Link
               href={`/product/${product.id}`}

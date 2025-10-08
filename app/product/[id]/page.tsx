@@ -1,4 +1,4 @@
-import { getProduct } from '@/actions/products'
+import { getProduct } from '@/actions/product'
 import ProductAction from '@/components/product/ProductAction'
 import ProductQuantity from '@/components/product/ProductQuantity'
 import Image from 'next/image'
