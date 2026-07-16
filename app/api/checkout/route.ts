@@ -1,9 +1,15 @@
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-02-24.acacia', // Use the latest API version
-})
+let _stripe: Stripe | null = null
+function stripe() {
+  if (!_stripe) {
+    _stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+      apiVersion: '2025-02-24.acacia',
+    })
+  }
+  return _stripe
+}
 
 export async function POST(req: Request) {
   try {
@@ -20,7 +26,7 @@ export async function POST(req: Request) {
       quantity: item.quantity,
     }))
 
-    const session = await stripe.checkout.sessions.create({
+    const session = await stripe().checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: lineItems,
       mode: 'payment',
