@@ -1,18 +1,4 @@
 'use server'
-import WooCommerceRestApi from 'woocommerce-rest-ts-api'
-
-let _wc: WooCommerceRestApi | null = null
-function wc() {
-  if (!_wc) {
-    _wc = new WooCommerceRestApi({
-      url: process.env.WORDPRESS_URL || 'http://meeeezy.local/',
-      consumerKey: process.env.WC_CONSUMER_KEY as string,
-      consumerSecret: process.env.WC_CONSUMER_SECRET as string,
-      version: 'wc/v3',
-    })
-  }
-  return _wc
-}
 
 const fallbackProducts = [
   { id: 1, name: 'Hoodie One', price: '59.00', description: '<p>A premium hoodie crafted for comfort and style.</p>', images: [{ src: '/01.png', alt: 'Hoodie One' }] },
@@ -26,25 +12,9 @@ const fallbackProducts = [
 ]
 
 export const getProducts = async () => {
-  if (!process.env.WC_CONSUMER_KEY || !process.env.WC_CONSUMER_SECRET) {
-    return fallbackProducts
-  }
-  try {
-    const products = await wc().get('products')
-    return products.data
-  } catch {
-    return fallbackProducts
-  }
+  return fallbackProducts
 }
 
 export const getProduct = async (id: string) => {
-  if (!process.env.WC_CONSUMER_KEY || !process.env.WC_CONSUMER_SECRET) {
-    return fallbackProducts.find((p) => p.id === parseInt(id)) ?? fallbackProducts[0]
-  }
-  try {
-    const product = await wc().get(`products/${parseInt(id)}`)
-    return product.data
-  } catch {
-    return fallbackProducts.find((p) => p.id === parseInt(id)) ?? fallbackProducts[0]
-  }
+  return fallbackProducts.find((p) => p.id === parseInt(id)) ?? fallbackProducts[0]
 }
