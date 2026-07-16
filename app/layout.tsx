@@ -22,7 +22,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${dmmono.className} antialiased`}>
-        <CartProvider> {children}</CartProvider>
+        <CartProvider>{children}</CartProvider>
       </body>
     </html>
   );
