@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server'
-import Stripe from 'stripe'
 
-let _stripe: Stripe | null = null
+let _stripe: any = null
 function stripe() {
   if (!_stripe) {
-    _stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+    const key = process.env.STRIPE_SECRET_KEY
+    if (!key) throw new Error('STRIPE_SECRET_KEY is not set')
+    const Stripe = require('stripe').default
+    _stripe = new Stripe(key, {
       apiVersion: '2025-02-24.acacia',
     })
   }
@@ -14,6 +16,9 @@ function stripe() {
 export async function POST(req: Request) {
   try {
     const { items } = await req.json()
+    if (!Array.isArray(items) || items.length === 0) {
+      return NextResponse.json({ error: 'No items in cart' }, { status: 400 })
+    }
     const lineItems = items.map((item: any) => ({
       price_data: {
         currency: 'usd',

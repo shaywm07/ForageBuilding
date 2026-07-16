@@ -2,13 +2,20 @@
 import React, { useState } from 'react'
 import { Button } from './ui/button'
 import { useCart } from '@/hooks/use-cart'
-import { loadStripe } from '@stripe/stripe-js'
+import type { Stripe } from '@stripe/stripe-js'
 
 type Props = {}
 
-const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
-)
+let stripePromise: Promise<Stripe | null> | null = null
+function getStripe() {
+  if (!stripePromise) {
+    const key = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+    if (!key) return Promise.resolve(null)
+    const { loadStripe } = require('@stripe/stripe-js')
+    stripePromise = loadStripe(key)
+  }
+  return stripePromise
+}
 
 const Checkout = (props: Props) => {
   const { items } = useCart()
@@ -27,9 +34,13 @@ const Checkout = (props: Props) => {
         }),
       })
 
-      const { sessionId } = await response.json()
-      const stripe = await stripePromise
-      const { error } = await stripe!.redirectToCheckout({ sessionId })
+      const data = await response.json()
+      if (data.error) throw new Error(data.error)
+
+      const stripe = await getStripe()
+      if (!stripe) throw new Error('Stripe is not configured')
+
+      const { error } = await stripe.redirectToCheckout({ sessionId: data.sessionId })
 
       if (error) {
         throw new Error(error.message)
