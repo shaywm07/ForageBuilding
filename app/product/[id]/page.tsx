@@ -11,10 +11,19 @@ type Props = {
 
 const ProductPage = async ({ params: { id } }: Props) => {
 
-  
-
-  //get the info of the product
-  const product = await getProduct(id)
+  let product: any
+  try {
+    product = await getProduct(id)
+  } catch {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600 mb-4">Product not found.</p>
+          <Link href="/" className="text-lg font-medium hover:text-gray-600">Back to shop</Link>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen">
